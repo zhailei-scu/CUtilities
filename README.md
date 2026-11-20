@@ -5,7 +5,7 @@
 [![Requires CMake 3.0.0+](https://img.shields.io/badge/Cmake-3.0.0+-blue.svg?logo=cmake&logoColor=white)](https://cmake.org/)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-CUtilities is a project including some basic C/C++ functions that is common for development..</br>
+CUtilities is a project including some basic C/C++ functions that is common for development.</br>
 
 Author: Lei Zhai.</br>
 
@@ -22,13 +22,13 @@ License: MIT License (There are no limitation for anyone to use/modify/sale of t
 ## 1.1 Introduce the Shared code to your project
 ```shell
 cd $YourProjectPath
-git remote add CUtilities-github http://192.168.55.1:8011/Common/CUtilities.git
+git remote add CUtilities-github https://github.com/zhailei-scu/CUtilities.git
 ```
 
 ## 1.2 Push change of the Shared code to repo
 ```shell
 git add .
 git commit -m "xxxxxx"
-git push -u local master         # The main project
-git subtree push --prefix=CUtilities/ CUtilities-local master
+git push -u github master         # The main project
+git subtree push --prefix=CUtilities/ CUtilities-github master
 ```

@@ -36,6 +36,12 @@ cd $YourProjectPath
 git remote add CUtilities-github https://github.com/zhailei-scu/CUtilities.git
 git subtree add --prefix=CUtilities CUtilities-github master
 ```
+
+Sure, you can also update the CUtilities in your project:
+```shell
+git subtree pull --prefix=CUtilities CUtilities-github master
+```
+
 ## 1.2 Configure your project to use CUtilities
 In your cmake project, use:
 ```cmake
@@ -44,14 +50,32 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/CUtilities)
 in your main CMakeLists.txt to introuce CUtilities.
 
 After the add_library or add_executable, you can use:
-```
+```cmake
 target_link_libraries(targetName CUtilities::CUtilities)
 ```
 to build your library or exe and add CUtilities support.
 
 
-# 2. Mannual link the library after install CUtilities
+# 2. Mannual link the library after install CUtilities(Need install)
+```shell
+cd $AnyPathYouWantToInstall
+git clone https://github.com/zhailei-scu/CUtilities.git
+mkdir CUtilities_build
+cd CUtilities_build/
+cmake -S CUtilities_build/ -DCMAKE_INSTALL_PREFIX=CUtilities_install
+make j8 && make install
+```
 
+Then, like use any other CMake package, you can use `find_package` to load and verify in your CMakeLists.txt:
+```cmake
+find_package(CUtilities CONFIG REQUIRED)
+```
+
+After the add_library or add_executable, you can use:
+```cmake
+target_link_libraries(targetName CUtilities::CUtilities)
+```
+to build your library or exe and add CUtilities support.
 
 # 3 Contribute CUtilities change to the repo
 If you agree, you can contribute your changes of CUtilities to repo with a new branch $nameOfBranch$, we would be happy to consider your merge request carefully.

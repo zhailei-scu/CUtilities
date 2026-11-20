@@ -13,6 +13,17 @@ file(GLOB headersPath ${PROJECT_SOURCE_DIR}/../src/include/JsonExt/*.h)
 
 add_library(JsonExt STATIC ${sourcesPath} ${headersPath})
 
-target_include_directories(JsonExt PUBLIC ${PROJECT_SOURCE_DIR}/../src/include/JsonExt)
+target_include_directories(JsonExt PUBLIC
+                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../src/include/JsonExt>
+                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-install(TARGETS JsonExt DESTINATION lib)
+install(TARGETS JsonExt
+        EXPORT CUtilitiesTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/../src/include/JsonExt/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)

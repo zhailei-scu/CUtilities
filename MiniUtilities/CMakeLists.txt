@@ -12,6 +12,17 @@ file(GLOB headersPath ${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities/*.h)
 
 add_library(MiniUtilities STATIC ${sourcesPath} ${headersPath})
 
-target_include_directories(MiniUtilities PUBLIC ${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities)
+target_include_directories(MiniUtilities PUBLIC
+                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities>
+                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-install(TARGETS MiniUtilities DESTINATION lib)
+install(TARGETS MiniUtilities
+        EXPORT CUtilitiesTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)

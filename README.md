@@ -77,7 +77,7 @@ target_link_libraries(targetName CUtilities::CUtilities)
 ```
 to build your library or exe and add CUtilities support.
 
-# 3 Contribute CUtilities change to the repo
+# 3 Contribute CUtilities change to the CUtilities repo
 If you agree, you can contribute your changes of CUtilities to repo with a new branch $nameOfBranch$, we would be happy to consider your merge request carefully.
 ```shell
 git add .

@@ -7,28 +7,57 @@
 
 CUtilities is a project including some basic C/C++ functions that is common for development.</br>
 
-Author: Lei Zhai.</br>
+> **NOTE**
+>     Currently, we recommand you use CMake to build your project and use CUtilities.
+
+-  Author: Lei Zhai.</br>
 
 Data: From 2026/11/14 to now.</rb>
 
-- - Location: Institute of Energy, Hefei Comprehensive National Science Center. No. 80, Sanguocheng Road, Luyang District, Hefei City, Anhui Province, People's Republic of China.</br>
+- Location: Institute of Energy, Hefei Comprehensive National Science Center. No. 80, Sanguocheng Road, Luyang District, Hefei City, Anhui Province, People's Republic of China.</br>
 
-Email: <zhaileiytp@163.com>  or  <zhailei@ie.ah.cn>  </br>
+- Email: <zhaileiytp@163.com>  or  <zhailei@ie.ah.cn>  </br>
 
 License: MIT License (There are no limitation for anyone to use/modify/sale of this code, be happy to use this code).
 
-# 1. Usage
 
-## 1.1 Introduce the Shared code to your project
+Here, we can use CUtilities by two ways:
+
+- 1 Embedment the CUtilities to your CMake project (without installation).
+
+- 2 Mannual link the library after install CUtilities
+
+
+# 1. Embedment the CUtilities to your CMake project (without installation) 
+
+## 1.1 Download the Shared code to your project
 ```shell
 cd $YourProjectPath
 git remote add CUtilities-github https://github.com/zhailei-scu/CUtilities.git
+git subtree add --prefix=CUtilities CUtilities-github master
 ```
+## 1.2 Configure your project to use CUtilities
+In your cmake project, use:
+```cmake
+add_subdirectory(${PROJECT_SOURCE_DIR}/CUtilities)
+```
+in your main CMakeLists.txt to introuce CUtilities.
 
-## 1.2 Push change of the Shared code to repo
+After the add_library or add_executable, you can use:
+```
+target_link_libraries(targetName CUtilities::CUtilities)
+```
+to build your library or exe and add CUtilities support.
+
+
+# 2. Mannual link the library after install CUtilities
+
+
+# 3 Contribute CUtilities change to the repo
+If you agree, you can contribute your changes of CUtilities to repo with a new branch $nameOfBranch$, we would be happy to consider your merge request carefully.
 ```shell
 git add .
 git commit -m "xxxxxx"
 git push -u github master         # The main project
-git subtree push --prefix=CUtilities/ CUtilities-github master
+git subtree push --prefix=CUtilities/ CUtilities-github nameOfBranch
 ```

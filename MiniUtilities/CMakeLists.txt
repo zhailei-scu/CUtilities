@@ -12,4 +12,6 @@ file(GLOB headersPath ${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities/*.h)
 
 add_library(MiniUtilities STATIC ${sourcesPath} ${headersPath})
 
+target_include_directories(MiniUtilities PUBLIC ${PROJECT_SOURCE_DIR}/../src/include/MiniUtilities)
+
 install(TARGETS MiniUtilities DESTINATION lib)

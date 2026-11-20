@@ -13,4 +13,6 @@ file(GLOB headersPath ${PROJECT_SOURCE_DIR}/../src/include/JsonExt/*.h)
 
 add_library(JsonExt STATIC ${sourcesPath} ${headersPath})
 
+target_include_directories(JsonExt PUBLIC ${PROJECT_SOURCE_DIR}/../src/include/JsonExt)
+
 install(TARGETS JsonExt DESTINATION lib)

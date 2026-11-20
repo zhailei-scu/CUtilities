@@ -27,7 +27,6 @@ Here, we can use CUtilities by two ways:
 
 - 2 Mannual link the library after install CUtilities
 
-
 # 1. Embedment the CUtilities to your CMake project (without installation) 
 
 ## 1.1 Download the Shared code to your project

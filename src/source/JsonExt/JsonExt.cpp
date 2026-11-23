@@ -14,9 +14,6 @@
 #include <algorithm>
 
 /*JsonFlags*/
-JsonFlags* JsonFlags::m_JsonFlags = NULL;
-JsonFlags::GbClear JsonFlags::m_GbClear;
-
 JsonFlags::JsonFlags(){
     this->clear();
 }
@@ -25,10 +22,8 @@ JsonFlags::~JsonFlags(){
     this->clear();
 }
 
-const JsonFlags* JsonFlags::getInstance(){
-    if(!m_JsonFlags){
-        m_JsonFlags = new JsonFlags();
-    }
+const JsonFlags & JsonFlags::getInstance(){
+    static JsonFlags m_JsonFlags;
 
     return m_JsonFlags;
 }
@@ -40,16 +35,6 @@ void JsonFlags::clear(){
     arrayEndFlag = "]";
     commaFlag = ",";
     colonFlag = ":";
-}
-
-JsonFlags::GbClear::GbClear(){
-}
-
-JsonFlags::GbClear::~GbClear(){
-    if(m_JsonFlags){
-        delete m_JsonFlags;
-        m_JsonFlags = NULL;
-    }
 }
 
 /*JsonBase*/
@@ -71,6 +56,15 @@ const JsonBase & JsonBase::operator=(const JsonBase & subject){
     if(subject.namedPairs){
         this->namedPairs = new std::map<std::string,std::string>();
         *this->namedPairs = *subject.namedPairs;
+    }
+
+    if(subject.namedLists){
+        this->namedLists = new std::map<std::string,std::vector<std::string>>();
+        for(std::map<std::string,std::vector<std::string>>::iterator it = subject.namedLists->begin();
+            it != subject.namedLists->end();
+            it++){
+                this->namedLists->insert(std::pair<std::string,std::vector<std::string>>(it->first,it->second));
+            }
     }
 
     if(subject.namedObjects){
@@ -104,6 +98,18 @@ void JsonBase::reset(){
         std::map<std::string,std::string>().swap(*this->namedPairs);
         delete this->namedPairs;
         this->namedPairs = NULL;
+    }
+
+    if(this->namedLists){
+        for(std::map<std::string,std::vector<std::string>>::iterator it = this->namedLists->begin();
+            it != this->namedLists->end();
+            it++){
+            std::vector<std::string>().swap(it->second);
+            it->second.clear();
+        }
+        std::map<std::string,std::vector<std::string>>().swap(*this->namedLists);
+        delete this->namedLists;
+        this->namedLists = NULL;
     }
 
     if(this->namedObjects){
@@ -214,7 +220,7 @@ void JsonExt::Extract(JsonBase* treeRoot,std::vector<std::string> & clearInfo){
 }
 
 void JsonExt::Extract(JsonBase* base,
-                      std::vector<std::string> & clearInfo,
+                      const std::vector<std::string> & clearInfo,
                       int & pos,
                       int & endPos){
 
@@ -230,10 +236,10 @@ void JsonExt::Extract(JsonBase* base,
 
         pos++;
 
-        if(JsonFlags::getInstance()->objectStartFlag == clearInfo.at(pos)){
-            if(':' != clearInfo.at(pos-1).back()){ // the array {[{
+        if(JsonFlags::getInstance().objectStartFlag == clearInfo.at(pos)){  // "{"
+            if(JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos-1)){ // the array {[{
 
-                if(JsonFlags::getInstance()->arrayStartFlag != clearInfo.at(pos-1) && base->objectsArray->size() <=0){
+                if(JsonFlags::getInstance().arrayStartFlag != clearInfo.at(pos-1) && base->objectsArray->size() <=0){
                     std::cerr<<"Error, you must special the array flag at flatted line: "<<pos<<std::endl;
                     exit(-1);
                 }
@@ -243,11 +249,11 @@ void JsonExt::Extract(JsonBase* base,
                 base->objectsArray->insert(std::pair<int,JsonBase*>(index,temp));
                 this->Extract(temp,clearInfo,pos,endPos);
 
-            }else{ //named objects {"":{
-                if(JsonFlags::getInstance()->objectStartFlag == clearInfo.at(pos-2) ||
-                    JsonFlags::getInstance()->objectEndFlag == clearInfo.at(pos-2)   ||
-                    JsonFlags::getInstance()->arrayStartFlag == clearInfo.at(pos-2)  ||
-                    JsonFlags::getInstance()->arrayStartFlag == clearInfo.at(pos-2)){
+            }else if(JsonFlags::getInstance().colonFlag == clearInfo.at(pos-1)){ //named objects {"":{
+                if(JsonFlags::getInstance().objectStartFlag == clearInfo.at(pos-2) ||
+                    JsonFlags::getInstance().objectEndFlag == clearInfo.at(pos-2)   ||
+                    JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos-2)  ||
+                    JsonFlags::getInstance().arrayEndFlag == clearInfo.at(pos-2)){
                     std::cerr<<"Error, the key of named object cannot be any flag: "<<clearInfo.at(pos-1).c_str()
                              <<" When parse the json file at flatted line: "<<pos<<std::endl;
                     exit(-1);
@@ -268,39 +274,106 @@ void JsonExt::Extract(JsonBase* base,
                 this->Extract(temp,clearInfo,pos,endPos);
             }
 
-        }else if(JsonFlags::getInstance()->arrayStartFlag == clearInfo.at(pos)){ //array
-            if(!base->objectsArray) base->objectsArray = new std::map<int,JsonBase*>();
-        }else if(JsonFlags::getInstance()->objectEndFlag == clearInfo.at(pos)){
-            return;
-        }else{
-
-            if(':' == clearInfo.at(pos-1).back()){ // the pair
-
-                if(JsonFlags::getInstance()->objectStartFlag == clearInfo.at(pos-2) ||
-                   JsonFlags::getInstance()->objectEndFlag == clearInfo.at(pos-2)   ||
-                   JsonFlags::getInstance()->arrayStartFlag == clearInfo.at(pos-2)  ||
-                   JsonFlags::getInstance()->arrayStartFlag == clearInfo.at(pos-2)){
-                   std::cerr<<"Error,The key of named object cannot be any flag: "
-                            <<clearInfo.at(pos-1).c_str()<<" When parse the json file at flatted line: "<<pos<<std::endl;
-                    exit(-1);
-                }
-
-                if(!base->namedPairs) base->namedPairs = new std::map<std::string,std::string>();
-
-                if(base->namedPairs->end() != base->namedPairs->find(clearInfo.at(pos-2))){
-                    std::cerr<<"Error, the key was redefined: "<<clearInfo.at(pos-2).c_str()<<std::endl;
-                    exit(-1);
-                }
-                tempStrSub = clearInfo.at(pos-2);
-                StringOperation::EraseHeadAndTail(tempStrSub,'\"');
-                transform(tempStrSub.begin(),tempStrSub.end(),tempStrSub.begin(),::tolower);
-                tempStrObj = clearInfo.at(pos);
-                StringOperation::EraseHeadAndTail(tempStrObj,'\"');
-
-                base->namedPairs->insert(std::pair<std::string,std::string>(tempStrSub,tempStrObj));
+        }else if(JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos)){ // "["
+            if(pos >= endPos){
+                std::cerr<<"Error, The array start Flag not following any contnets: "<<JsonFlags::getInstance().arrayStartFlag
+                <<" When parse the json file at flatted line: "<<pos<<std::endl;
+                exit(-1);
             }
 
+            if(JsonFlags::getInstance().objectStartFlag == clearInfo.at(pos+1)){ // object array
+                if(!base->objectsArray) base->objectsArray = new std::map<int,JsonBase*>();
+            }else if(JsonFlags::getInstance().objectEndFlag == clearInfo.at(pos+1)   ||
+                     JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos+1)  ||
+                     JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos+1)){
+                std::cerr<<"Error,after array start flag: "<<JsonFlags::getInstance().arrayStartFlag
+                         <<" cannot be the content: "<<clearInfo.at(pos+1).c_str()
+                         <<" When parse the json file at flatted line: "<<pos+1<<std::endl;
+                exit(-1);
+            }else{       //named list
+                if(!base->namedLists) base->namedLists = new std::map<std::string,std::vector<std::string>>();
+
+                this->Extract(base->namedLists,clearInfo,pos,endPos);
+            }
+        }else if(JsonFlags::getInstance().colonFlag == clearInfo.at(pos-1)){                          // ":"
+
+            if(!base->namedPairs) base->namedPairs = new std::map<std::string,std::string>();
+
+            if(base->namedPairs->end() != base->namedPairs->find(clearInfo.at(pos-2))){
+                std::cerr<<"Error, the key was redefined: "<<clearInfo.at(pos-2).c_str()<<std::endl;
+                exit(-1);
+            }
+            tempStrSub = clearInfo.at(pos-2);
+            StringOperation::EraseHeadAndTail(tempStrSub,'\"');
+            transform(tempStrSub.begin(),tempStrSub.end(),tempStrSub.begin(),::tolower);
+            tempStrObj = clearInfo.at(pos);
+            StringOperation::EraseHeadAndTail(tempStrObj,'\"');
+
+            base->namedPairs->insert(std::pair<std::string,std::string>(tempStrSub,tempStrObj));
+        }else if(JsonFlags::getInstance().objectEndFlag == clearInfo.at(pos)){
+            return;
         }
+    }
+}
+
+void JsonExt::Extract(std::map<std::string,std::vector<std::string>> *theList,
+                      const std::vector<std::string> & clearInfo,
+                      int & pos,
+                      int & endPos){
+    std::string tempStrSub;
+    std::string tempStrObj;
+
+    if(JsonFlags::getInstance().objectStartFlag == clearInfo.at(pos-2) ||
+        JsonFlags::getInstance().objectEndFlag == clearInfo.at(pos-2)   ||
+        JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos-2)  ||
+        JsonFlags::getInstance().arrayEndFlag == clearInfo.at(pos-2)){
+        std::cerr<<"Error,The key of named list cannot be any flag: "
+                    <<clearInfo.at(pos-2).c_str()<<" When parse the json file at flatted line: "<<pos<<std::endl;
+        exit(-1);
+    }
+
+    if(JsonFlags::getInstance().colonFlag != clearInfo.at(pos-1)){
+        std::cerr<<"Error, lacking of flag: "<<JsonFlags::getInstance().colonFlag<<" for namedLists"
+        <<" When parse the json file at flatted line: "<<pos-1<<std::endl;
+        exit(-1);
+    }
+
+    tempStrSub = clearInfo.at(pos-2);
+    StringOperation::EraseHeadAndTail(tempStrSub,'\"');
+    transform(tempStrSub.begin(),tempStrSub.end(),tempStrSub.begin(),::tolower);
+
+    if(theList->end() != theList->find(tempStrSub)){
+        std::cerr<<"Error: List : "<<tempStrSub<<" is redefined."<<std::endl;
+        exit(-1);
+    }
+    theList->insert(std::pair<std::string,std::vector<std::string>>(tempStrSub,std::vector<std::string>()));
+    std::map<std::string,std::vector<std::string>>::iterator it = theList->find(tempStrSub);
+
+    
+    while(pos<endPos){
+        pos++;
+
+        if(JsonFlags::getInstance().arrayEndFlag == clearInfo.at(pos)){
+            break;
+        }
+
+        if(JsonFlags::getInstance().objectStartFlag == clearInfo.at(pos)  ||
+            JsonFlags::getInstance().objectEndFlag == clearInfo.at(pos)   ||
+            JsonFlags::getInstance().arrayStartFlag == clearInfo.at(pos)){
+            std::cerr<<"Error,The value of named list cannot be any flag: "
+                     <<clearInfo.at(pos).c_str()
+                     <<" When parse the json file at flatted line: "<<pos<<std::endl;
+            exit(-1);
+        }
+
+        if(JsonFlags::getInstance().commaFlag != clearInfo.at(pos)){
+            tempStrObj = clearInfo.at(pos);
+            StringOperation::EraseHeadAndTail(tempStrObj,'\"');
+            transform(tempStrObj.begin(),tempStrObj.end(),tempStrObj.begin(),::tolower);
+
+            it->second.push_back(tempStrObj);
+        }
+
     }
 }
 
@@ -315,7 +388,7 @@ void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & trave
         blank.append(" ");
     }
 
-    traverseInfo.push_back(blank + JsonFlags::getInstance()->objectStartFlag);
+    traverseInfo.push_back(blank + JsonFlags::getInstance().objectStartFlag);
 
     if(treeRoot->namedPairs){
 
@@ -326,14 +399,31 @@ void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & trave
         }
     }
 
+    if(treeRoot->namedLists){
+        std::map<std::string,std::vector<std::string>>::iterator itLists= treeRoot->namedLists->begin();
+
+        while(itLists != treeRoot->namedLists->end()){
+
+            traverseInfo.push_back(blank + itLists->first + ":" + JsonFlags::getInstance().arrayStartFlag);
+            for(std::vector<std::string>::iterator itString = itLists->second.begin();
+                itString != itLists->second.end();
+                itString++){
+                traverseInfo.push_back(*itString);
+            }
+
+            traverseInfo.push_back(blank + itLists->first + ":" + JsonFlags::getInstance().arrayEndFlag);
+            itLists++;
+        }
+    }
+
     if(treeRoot->objectsArray){
-        traverseInfo.push_back(blank + JsonFlags::getInstance()->arrayStartFlag);
+        traverseInfo.push_back(blank + JsonFlags::getInstance().arrayStartFlag);
         std::map<int,JsonBase*>::iterator itArray = treeRoot->objectsArray->begin();
         while(itArray !=  treeRoot->objectsArray->end()){
             Traverse(const_cast<const JsonBase*>(itArray->second),traverseInfo,(blankNum+1)*2);
             itArray++;
         }
-        traverseInfo.push_back(blank + JsonFlags::getInstance()->arrayEndFlag);
+        traverseInfo.push_back(blank + JsonFlags::getInstance().arrayEndFlag);
     }
 
     if(treeRoot->namedObjects){
@@ -346,7 +436,7 @@ void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & trave
         }
     }
 
-    traverseInfo.push_back(blank + JsonFlags::getInstance()->objectEndFlag);
+    traverseInfo.push_back(blank + JsonFlags::getInstance().objectEndFlag);
 }
 
 void JsonExt::Check(const JsonBase* treeRoot){
@@ -355,12 +445,12 @@ void JsonExt::Check(const JsonBase* treeRoot){
 }
 
 void JsonExt::SplitByFlag(std::vector<std::string> & clearInfo){
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->objectStartFlag.at(0));
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->objectEndFlag.at(0));
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->arrayStartFlag.at(0));
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->arrayEndFlag.at(0));
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->commaFlag.at(0));
-    this->SplitByFlag(clearInfo,JsonFlags::getInstance()->colonFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().objectStartFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().objectEndFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().arrayStartFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().arrayEndFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().commaFlag.at(0));
+    this->SplitByFlag(clearInfo,JsonFlags::getInstance().colonFlag.at(0));
 }
 
 void JsonExt::SplitByFlag(std::vector<std::string> & clearInfo,const char flag){

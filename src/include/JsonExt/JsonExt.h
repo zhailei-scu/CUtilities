@@ -24,10 +24,9 @@ private:
     virtual ~JsonFlags();
     JsonFlags(const JsonFlags &) = delete;
     const JsonFlags & operator =(const JsonFlags &) = delete;
-private:
-    static JsonFlags* m_JsonFlags;
+
 public:
-    static const JsonFlags* getInstance();
+    static const JsonFlags & getInstance();
 
     std::string objectStartFlag = "{";
     std::string objectEndFlag = "}";
@@ -37,13 +36,6 @@ public:
     std::string colonFlag = ":";
 private:
     void clear();
-private:
-    class GbClear{
-    public:
-        GbClear();
-        ~GbClear();
-    };
-    static GbClear m_GbClear;
 };
 
 class JsonBase{
@@ -58,6 +50,7 @@ public:
     friend JsonExt;
 
     std::map<std::string,std::string> *namedPairs = NULL;
+    std::map<std::string,std::vector<std::string>> *namedLists = NULL;
     std::map<std::string,JsonBase*> *namedObjects = NULL;
     std::map<int,JsonBase*> *objectsArray = NULL;
 
@@ -88,7 +81,11 @@ private:
     void EraseUselesschars(std::string & s);
     void Extract(std::vector<std::string> & clearInfo);
     void Extract(JsonBase* treeRoot,std::vector<std::string> & clearInfo);
-    void Extract(JsonBase* base,std::vector<std::string> & clearInfo,int & pos,int & endPos);
+    void Extract(JsonBase* base,const std::vector<std::string> & clearInfo,int & pos,int & endPos);
+    void Extract(std::map<std::string,std::vector<std::string>> *theList,
+                 const std::vector<std::string> & clearInfo,
+                 int & pos,
+                 int & endPos);
     void SplitByFlag(std::vector<std::string> & clearInfo);
     void SplitByFlag(std::vector<std::string> & clearInfo,const char flag);
     void Check(const JsonBase* treeRoot);

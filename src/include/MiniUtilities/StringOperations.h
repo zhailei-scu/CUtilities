@@ -5,7 +5,7 @@
 *--- Science Center. No. 80, Sanguocheng Road, Luyang District, 
 *--- Hefei City, Anhui Province, People's Republic of China.
 *--- Email : zhaileiytp@163.com or zhailei@ie.ah.cn
-*--- data: From 2026/11 to --
+*--- data: From 2021/11 to --
 *----------------------------------------------------------------------*/
 #ifndef STRINGOPERATIONS_H
 #define STRINGOPERATIONS_H

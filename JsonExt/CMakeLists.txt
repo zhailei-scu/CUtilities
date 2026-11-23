@@ -17,6 +17,8 @@ target_include_directories(JsonExt PUBLIC
                            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../src/include/JsonExt>
                            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
+target_link_libraries(JsonExt PRIVATE CVersion MiniUtilities)
+
 install(TARGETS JsonExt
         EXPORT CUtilitiesTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

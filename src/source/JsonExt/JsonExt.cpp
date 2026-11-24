@@ -9,6 +9,7 @@
 *----------------------------------------------------------------------*/
 #include "JsonExt.h"
 #include "StringOperations.h"
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -183,7 +184,9 @@ void JsonExt::Extract(const std::string & file){
     ifs.open(file,std::ios::in);
 
     if(!ifs.is_open()){
+        std::filesystem::path currentPath = std::filesystem::current_path();
         std::cerr<<"Cannot open the file: "<<file<<std::endl;
+        std::cerr<<"Current working path is: "<<currentPath<<std::endl;
         exit(-1);
     }
 
@@ -382,24 +385,19 @@ void JsonExt::Extract(std::map<std::string,std::vector<std::string>> *theList,
     }
 }
 
-void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & traverseInfo,int blankNum){
+void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & traverseInfo,std::string blank_Begin){
     if(!treeRoot){
         return;
     }
+    std::string table="    ";
 
-    std::string blank="";
-
-    for(int i = 0;i<blankNum;i++){
-        blank.append(" ");
-    }
-
-    traverseInfo.push_back(blank + JsonFlags::getInstance().objectStartFlag);
+    traverseInfo.push_back(blank_Begin + JsonFlags::getInstance().objectStartFlag);
 
     if(treeRoot->namedPairs){
 
         std::map<std::string,std::string>::iterator itNamed = treeRoot->namedPairs->begin();
         while(itNamed !=  treeRoot->namedPairs->end()){
-            traverseInfo.push_back(blank + itNamed->first + ":" + itNamed->second);
+            traverseInfo.push_back(blank_Begin + table + itNamed->first + ":" + itNamed->second);
             itNamed++;
         }
     }
@@ -409,39 +407,39 @@ void JsonExt::Traverse(const JsonBase* treeRoot,std::vector<std::string> & trave
 
         while(itLists != treeRoot->namedLists->end()){
 
-            traverseInfo.push_back(blank + itLists->first + ":" + JsonFlags::getInstance().arrayStartFlag);
+            traverseInfo.push_back(blank_Begin + table + itLists->first + ":" + JsonFlags::getInstance().arrayStartFlag);
             for(std::vector<std::string>::iterator itString = itLists->second.begin();
                 itString != itLists->second.end();
                 itString++){
-                traverseInfo.push_back(*itString);
+                traverseInfo.push_back(blank_Begin + table + table + *itString);
             }
 
-            traverseInfo.push_back(blank + itLists->first + ":" + JsonFlags::getInstance().arrayEndFlag);
+            traverseInfo.push_back(blank_Begin + table + JsonFlags::getInstance().arrayEndFlag);
             itLists++;
         }
     }
 
     if(treeRoot->objectsArray){
-        traverseInfo.push_back(blank + JsonFlags::getInstance().arrayStartFlag);
+        traverseInfo.push_back(blank_Begin + table + JsonFlags::getInstance().arrayStartFlag);
         std::map<int,JsonBase*>::iterator itArray = treeRoot->objectsArray->begin();
         while(itArray !=  treeRoot->objectsArray->end()){
-            Traverse(const_cast<const JsonBase*>(itArray->second),traverseInfo,(blankNum+1)*2);
+            Traverse(const_cast<const JsonBase*>(itArray->second),traverseInfo,blank_Begin + table);
             itArray++;
         }
-        traverseInfo.push_back(blank + JsonFlags::getInstance().arrayEndFlag);
+        traverseInfo.push_back(blank_Begin + table + JsonFlags::getInstance().arrayEndFlag);
     }
 
     if(treeRoot->namedObjects){
         std::map<std::string,JsonBase*>::iterator itNamed = treeRoot->namedObjects->begin();
         while(itNamed !=  treeRoot->namedObjects->end()){
-            traverseInfo.push_back(blank + itNamed->first + ":");
-            Traverse(const_cast<const JsonBase*>(itNamed->second),traverseInfo,(blankNum+1)*2);
+            traverseInfo.push_back(blank_Begin + table + itNamed->first + ":");
+            Traverse(const_cast<const JsonBase*>(itNamed->second),traverseInfo,blank_Begin + table);
 
             itNamed++;
         }
     }
 
-    traverseInfo.push_back(blank + JsonFlags::getInstance().objectEndFlag);
+    traverseInfo.push_back(blank_Begin + JsonFlags::getInstance().objectEndFlag);
 }
 
 void JsonExt::Check(const JsonBase* treeRoot){

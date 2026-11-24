@@ -94,7 +94,7 @@ private:
     friend JsonBase;
     static void Traverse(const JsonBase* treeRoot,
                          std::vector<std::string> & traverseInfo,
-                         int blankNum=0);
+                         std::string blankNum="");
 };
 
 #endif

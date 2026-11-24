@@ -16,8 +16,8 @@
 
 using namespace std;
 
-void StringOperation::getAllNumsInString(const char* Str,vector<string> & result,bool hasNegative){
-  string temp(Str);
+void StringOperation::getAllNumsInString(const std::string & Str,vector<string> & result,bool hasNegative){
+  string temp = Str;
   int startPos = 0;
   int endPos = 0;
   bool finded = false;
@@ -82,14 +82,9 @@ void StringOperation::getAllNumsInString(const char* Str,vector<string> & result
    
 }
 
-
-void StringOperation::getAllNumsInString(const string str,vector<string> & result,bool hasNegative){
-  getAllNumsInString(str.c_str(),result,hasNegative);
-}
-
-void StringOperation::split_notIncludeFlag(const char* Str,char split,vector<string> & result){
-  stringstream ss;
+void StringOperation::split_notIncludeFlag(const std::string & Str,char split,vector<string> & result){
   string temp;
+  stringstream ss;
   ss << Str;
 
   vector<string>().swap(result);
@@ -104,8 +99,8 @@ void StringOperation::split_notIncludeFlag(const char* Str,char split,vector<str
    
 }
 
-void StringOperation::split_includeFlag(const char* Str,char split,vector<string> & result){
-  string ss_Str(Str);
+void StringOperation::split_includeFlag(const std::string & Str,char split,vector<string> & result){
+  string ss_Str = Str;
   string temp;
 
   vector<string>().swap(result);
@@ -154,7 +149,7 @@ void StringOperation::EraseStr(std::string & line,const std::string & str){
     line = std::regex_replace(line,patten,std::string("$1$3"));
 }
 
-bool StringOperation::StringToBool(const char* str){
+bool StringOperation::StringToBool(const std::string & str){
   std::string tempStr = str;
   bool result = false;
   

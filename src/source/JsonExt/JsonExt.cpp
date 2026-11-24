@@ -160,7 +160,7 @@ const JsonExt & JsonExt::operator=(const JsonExt & subject){
     return *this;
 }
 
-void JsonExt::WriteBackToFile(const char* outFile,const std::ios::openmode & theMode = std::ios::ate){
+void JsonExt::WriteBackToFile(const std::string & outFile,const std::ios::openmode & theMode = std::ios::ate){
     std::ofstream ofs;
     std::vector<std::string> info;
 
@@ -178,9 +178,14 @@ void JsonExt::WriteBackToFile(const char* outFile,const std::ios::openmode & the
     }
 }
 
-void JsonExt::Extract(const char* file){
+void JsonExt::Extract(const std::string & file){
     std::ifstream ifs;
     ifs.open(file,std::ios::in);
+
+    if(!ifs.is_open()){
+        std::cerr<<"Cannot open the file: "<<file<<std::endl;
+        exit(-1);
+    }
 
     Extract(ifs);
 

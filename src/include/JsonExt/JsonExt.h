@@ -71,8 +71,8 @@ public:
     JsonBase* getJsonInfo() const;
     void setJsonInfo(JsonBase*);
     void Extract(std::ifstream & ifs);
-    void Extract(const char* file);
-    void WriteBackToFile(const char* outFile,const std::ios::openmode & theMode);
+    void Extract(const std::string &);
+    void WriteBackToFile(const std::string & outFile,const std::ios::openmode & theMode);
 private:
     JsonBase *theJsonInfo = NULL;
 

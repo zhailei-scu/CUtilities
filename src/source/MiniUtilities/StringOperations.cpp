@@ -167,10 +167,6 @@ bool StringOperation::StringToBool(const std::string & str){
   return result;
 }
 
-bool StringOperation::StringToBool(const string & str){
-  return StringToBool(str.c_str());
-}
-
 std::vector<std::string> StringOperation::extractAppendNum_Sub(const std::string & line, const std::string & targetStr){
     std::vector<std::string> splitedNum;
 

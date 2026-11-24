@@ -21,7 +21,6 @@ class StringOperation{
   static void EraseHeadAndTail(std::string & line,char theFlag);
   static void EraseStr(std::string & line,const std::string & str);
   static bool StringToBool(const std::string & str);
-  static bool StringToBool(const std::string & str);
 
   static void getAllNumsInString(const std::string & str,std::vector<std::string> & result,bool hasNegative);
 
